@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <style>
+    * {padding: 0; margin: 0}
+    textarea {
+      width: 100%;
+      font-size: 25px;
+      font-family: 'Consolas', 'Menlo', monospace;
+    }
+    #output-wrapper {
+      width: 100%;
+      font-size: 25px;
+      overflow: scroll;
+    }
+  </style>
+</head>
+<body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io.connect('http://php.drewl.us:7001');
+  var exec_timeout
+  var exec = function () {
+    var php_code = document.getElementById("php-code").value
+    socket.emit("client-exec", php_code, function (err, result) {
+      console.log(err, result)
+      output.innerHTML = '<pre>' + result + '</pre>'
+    }); 
+  }
+
+  var key_up = function () {
+    clearTimeout(exec_timeout)
+    exec_timeout = setTimeout(exec, 750)
+  }   
+  var textarea
+  var output_wrapper
+  var output
+
+  window.onload = function () {
+    textarea = document.getElementById("php-code")
+    output_wrapper = document.getElementById("output-wrapper")
+    output = document.getElementById("output")
+    textarea.style.height = innerHeight / 2 + "px"
+    output_wrapper.style.height = innerHeight / 2 + "px"
+  }
+
+</script>
+<div id="output-wrapper">
+  <div id="output"> </div>
+</div>
+<textarea id="php-code" onkeyup="key_up()"><?
+
+?></textarea>
+</body>
+</html>
+
+<pre>
+<?
+
+function grow (&$human) {
+  $human['age'] += 1;
+}
+
+$person = array('name' => 'Drew', 'age' => 27);
+grow($person);
+print_r($person);
+
+function grow2 ($person) {
+  $person->age += 1;
+}
+
+class Person {
+  public $age = 0;   
+  public function grow3() {}
+}
+
+$p = new Person();
+grow2($p);
+grow2($p);
+grow2($p);
+
+print_r($p);
+
+$incrementor_maker = function () {
+  $i = 1;
+  return function () use (&$i) {
+    $i += 1;
+    return $i;
+  };
+};
+
+$inc = $incrementor_maker();
+print $inc();
+print $inc();
+print $inc();
+
+$stuff['some']['deeply']['nested']['thing'] = 1;
+print_r($stuff);
+print 'hi';
+
+$numbers = array(1,2,3,4);
+$times_two = function ($x) {
+  return $x*2;
+};
+print_r( array_map($times_two, $numbers) );
+
+$arr = array('yo' => 'YO!', 'hi' => 'HI!');
+foreach ($arr as $key => $value) {
+  print "$key $value\n"; 
+}
+
+?>
+
+</pre>
